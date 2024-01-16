@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { ActivityIcon, CreditCardIcon, LayoutIcon, SettingsIcon } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export type Organization = {
     id: string
@@ -97,5 +98,16 @@ export function NavItem({ isActive, isExpanded, organization, onExpand }: NavIte
                 ))}
             </AccordionContent>
         </AccordionItem >
+    )
+}
+
+NavItem.Skeleton = function SkeletonNavItem() {
+    return (
+        <div className="flex items-center gap-x-2">
+            <div className="relative w-10 h-10 shrink-0">
+                <Skeleton className="absolute h-full w-full" />
+            </div>
+            <Skeleton className="h-10 w-full" />
+        </div>
     )
 }
