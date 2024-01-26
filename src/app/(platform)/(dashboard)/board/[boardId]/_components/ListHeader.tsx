@@ -11,9 +11,10 @@ import { ListOptions } from "./ListOptions"
 
 interface ListHeaderProps {
     list: List
+    onAddCard: () => void
 }
 
-export function ListHeader({ list }: ListHeaderProps) {
+export function ListHeader({ list, onAddCard }: ListHeaderProps) {
     const [title, setTitle] = useState(list.title)
     const [isEditing, setIsEditing] = useState(false)
 
@@ -107,7 +108,7 @@ export function ListHeader({ list }: ListHeaderProps) {
 
             <ListOptions
                 list={list}
-                onAddCard={() => {}}
+                onAddCard={onAddCard}
             />
         </div>
     )
