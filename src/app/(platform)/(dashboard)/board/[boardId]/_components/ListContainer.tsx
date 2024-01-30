@@ -5,6 +5,10 @@ import { ListForm } from "./ListForm"
 import { useEffect, useState } from "react"
 import { ListItem } from "./ListItem"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
+import { useAction } from "@/hooks/use-action"
+import { updateListOrder } from "@/actions/update-list-order"
+import { toast } from "sonner"
+import { updateCardOrder } from "@/actions/update-card-order"
 
 interface ListContainerProps {
     boardId: string
@@ -21,6 +25,24 @@ function reorder<T>(list: T[], startIndex: number, endIndex: number) {
 
 export function ListContainer({ boardId, lists }: ListContainerProps) {
     const [orderedLists, setOrderedLists] = useState(lists)
+
+    const { execute: executeUpdateListOrder } = useAction(updateListOrder, {
+        onSuccess: () => {
+            toast.success("Lista reorganizada")
+        },
+        onError: (error) => {
+            toast.error(error)
+        }
+    })
+
+    const { execute: executeUpdateCardOrder } = useAction(updateCardOrder, {
+        onSuccess: () => {
+            toast.success("Cartões reorganizados")
+        },
+        onError: (error) => {
+            toast.error(error)
+        }
+    })
 
     useEffect(() => {
         setOrderedLists(lists)
@@ -43,7 +65,7 @@ export function ListContainer({ boardId, lists }: ListContainerProps) {
             ).map((item, index) => ({ ...item, order: index }))
 
             setOrderedLists(items)
-            // TODO: Trigger Server Action
+            executeUpdateListOrder({ items, boardId })
         }
 
         // Ao mover um cartão, salvar a posição
@@ -78,7 +100,10 @@ export function ListContainer({ boardId, lists }: ListContainerProps) {
                 sourceList.Cards = reorderedCards
 
                 setOrderedLists(newOrderedLists)
-                // TODO: Trigger Server Action
+                executeUpdateCardOrder({
+                    boardId,
+                    items: reorderedCards
+                })
             } else {
                 // Mover o cartão para outra lista
 
@@ -101,7 +126,10 @@ export function ListContainer({ boardId, lists }: ListContainerProps) {
                 })
 
                 setOrderedLists(newOrderedLists)
-                // TODO: Trigger Server Action
+                executeUpdateCardOrder({
+                    boardId,
+                    items: destinationList.Cards
+                })
             }
         }
     }

@@ -1,3 +1,6 @@
+import { ModalProvider } from "@/components/providers/modal-provider"
+import { QueryProvider } from "@/components/providers/query-provider"
+
 import { ptBR } from "@clerk/localizations"
 import { ClerkProvider } from "@clerk/nextjs"
 import { Toaster } from "sonner"
@@ -9,8 +12,11 @@ export default function PlatformLayout({
 }) {
     return (
         <ClerkProvider localization={ptBR}>
-            <Toaster richColors />
-            {children}
+            <QueryProvider>
+                <Toaster richColors />
+                <ModalProvider />
+                {children}
+            </QueryProvider>
         </ClerkProvider>
     )
 }
