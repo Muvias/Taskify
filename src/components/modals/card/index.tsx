@@ -7,6 +7,9 @@ import { CardWithList } from "@/types"
 import { useQuery } from "@tanstack/react-query"
 import { Header } from "./header"
 import { Description } from "./description"
+import { Actions } from "./actions"
+import { AuditLog } from "@prisma/client"
+import { Activity } from "./activity"
 
 interface CardModalProps { }
 
@@ -18,6 +21,11 @@ export function CardModal({ }: CardModalProps) {
     const { data: cardData } = useQuery<CardWithList>({
         queryKey: ["card", id],
         queryFn: () => fetcher(`/api/cards/${id}`)
+    })
+
+    const { data: auditLogsData } = useQuery<AuditLog[]>({
+        queryKey: ["card-logs", id],
+        queryFn: () => fetcher(`/api/cards/${id}/logs`)
     })
 
     return (
@@ -38,8 +46,18 @@ export function CardModal({ }: CardModalProps) {
                                 ? <Description.Skeleton />
                                 : <Description card={cardData} />
                             }
+
+                            {!auditLogsData
+                                ? <Activity.Skeleton />
+                                : <Activity items={auditLogsData} />
+                            }
                         </div>
                     </div>
+
+                    {!cardData
+                        ? <Actions.Skeleton />
+                        : <Actions card={cardData} />
+                    }
                 </div>
             </DialogContent>
         </Dialog>

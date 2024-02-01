@@ -4,10 +4,8 @@ import { createSafeAction } from "@/lib/create-safe-action"
 import { db } from "@/lib/db"
 import { auth } from "@clerk/nextjs"
 import { revalidatePath } from "next/cache"
-import { CreateCard } from "./schema"
+import { CopyCard } from "./schema"
 import { InputType, ReturnType } from "./types"
-import { createAuditLog } from "@/lib/create-audit-log"
-import { ACTION, ENTITY_TYPE } from "@prisma/client"
 
 const handler = async (data: InputType): Promise<ReturnType> => {
     const { userId, orgId } = auth()
@@ -18,26 +16,26 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         }
     }
 
-    const { title, boardId, listId } = data
+    const { id, boardId } = data
 
     let card;
 
     try {
-        const list = await db.list.findUnique({
+        const cardToCopy = await db.card.findUnique({
             where: {
-                id: listId,
-                board: {
-                    orgId
+                id,
+                list: {
+                    board: {
+                        orgId
+                    }
                 }
             }
         })
 
-        if (!list) {
-            return { error: "Lista não encontrada" }
-        }
+        if (!cardToCopy) return { error: "Cartão não encontrado" }
 
         const lastCard = await db.card.findFirst({
-            where: { listId },
+            where: { listId: cardToCopy.listId },
             orderBy: { order: "desc" },
             select: { order: true }
         })
@@ -46,21 +44,15 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
         card = await db.card.create({
             data: {
-                title,
-                listId,
-                order: newOrder
+                title: `${cardToCopy.title} - Cópia`,
+                description: cardToCopy.description,
+                order: newOrder,
+                listId: cardToCopy.listId
             }
-        })
-
-        await createAuditLog({
-            entityId: card.id,
-            entityTitle: card.title,
-            entityType: ENTITY_TYPE.CARD,
-            action: ACTION.CREATE
         })
     } catch (error) {
         return {
-            error: "Falha ao criar."
+            error: "Falha ao copiar."
         }
     }
 
@@ -69,4 +61,4 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     return { data: card }
 }
 
-export const createCard = createSafeAction(CreateCard, handler)
+export const copyCard = createSafeAction(CopyCard, handler)
