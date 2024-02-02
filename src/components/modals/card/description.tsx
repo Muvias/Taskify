@@ -33,6 +33,10 @@ export function Description({ card }: DescriptionProps) {
                 queryKey: ['card', data.id]
             })
 
+            queryClient.invalidateQueries({
+                queryKey: ["card-logs", data.id]
+            })
+
             toast.success(`Descrição de "${data.title}" atualizada`)
 
             disableEditing()
