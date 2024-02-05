@@ -4,10 +4,12 @@ import { redirect } from "next/navigation";
 
 import { Hint } from "@/components/Hint";
 import { FormPopover } from "@/components/form/formPopover";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MAX_FREE_BOARDS } from "@/constants/boards";
 import { db } from "@/lib/db";
+import { getAvailableCount } from "@/lib/org-limit";
 import { auth } from "@clerk/nextjs";
 import { HelpCircleIcon, User2Icon } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export async function BoardList() {
     const { orgId } = auth()
@@ -22,6 +24,8 @@ export async function BoardList() {
             createdAt: "desc"
         }
     })
+
+    const availableCount = await getAvailableCount()
 
     return (
         <div className="space-y-4">
@@ -54,7 +58,7 @@ export async function BoardList() {
                         </p>
 
                         <span className="text-xs">
-                            5 restantes
+                            {MAX_FREE_BOARDS - availableCount} restantes
                         </span>
 
                         <Hint

@@ -8,6 +8,7 @@ import { createSafeAction } from "@/lib/create-safe-action"
 import { CreateBoard } from "./schema"
 import { createAuditLog } from "@/lib/create-audit-log"
 import { ACTION, ENTITY_TYPE } from "@prisma/client"
+import { hasAvailableCount, incrementAvailableCount } from "@/lib/org-limit"
 
 const handler = async (data: InputType): Promise<ReturnType> => {
     const { userId, orgId } = auth()
@@ -16,6 +17,12 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         return {
             error: "Unauthorized"
         }
+    }
+
+    const canCreate = await hasAvailableCount()
+
+    if (!canCreate) {
+        return { error: "Você atingiu o limite de quadros grátis, por favor assine para criar mais."}
     }
 
     const { title, image } = data
@@ -47,6 +54,8 @@ const handler = async (data: InputType): Promise<ReturnType> => {
                 imageUserName
             }
         })
+
+        await incrementAvailableCount()
 
         await createAuditLog({
             entityTitle: board.title,
