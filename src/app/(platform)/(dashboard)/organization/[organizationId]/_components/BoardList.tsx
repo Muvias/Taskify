@@ -10,6 +10,7 @@ import { db } from "@/lib/db";
 import { getAvailableCount } from "@/lib/org-limit";
 import { auth } from "@clerk/nextjs";
 import { HelpCircleIcon, User2Icon } from "lucide-react";
+import { checkSubscription } from "@/lib/subscription";
 
 export async function BoardList() {
     const { orgId } = auth()
@@ -26,6 +27,7 @@ export async function BoardList() {
     })
 
     const availableCount = await getAvailableCount()
+    const isPro = await checkSubscription()
 
     return (
         <div className="space-y-4">
@@ -58,7 +60,10 @@ export async function BoardList() {
                         </p>
 
                         <span className="text-xs">
-                            {MAX_FREE_BOARDS - availableCount} restantes
+                            {isPro
+                                ? "Ilimitado"
+                                : `${MAX_FREE_BOARDS - availableCount} restantes`
+                            }
                         </span>
 
                         <Hint

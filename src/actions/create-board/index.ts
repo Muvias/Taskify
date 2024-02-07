@@ -9,6 +9,7 @@ import { CreateBoard } from "./schema"
 import { createAuditLog } from "@/lib/create-audit-log"
 import { ACTION, ENTITY_TYPE } from "@prisma/client"
 import { hasAvailableCount, incrementAvailableCount } from "@/lib/org-limit"
+import { checkSubscription } from "@/lib/subscription"
 
 const handler = async (data: InputType): Promise<ReturnType> => {
     const { userId, orgId } = auth()
@@ -20,9 +21,10 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     }
 
     const canCreate = await hasAvailableCount()
+    const isPro = await checkSubscription()
 
-    if (!canCreate) {
-        return { error: "Você atingiu o limite de quadros grátis, por favor assine para criar mais."}
+    if (!canCreate && !isPro) {
+        return { error: "Você atingiu o limite de quadros grátis, por favor assine para criar mais." }
     }
 
     const { title, image } = data
@@ -55,7 +57,9 @@ const handler = async (data: InputType): Promise<ReturnType> => {
             }
         })
 
-        await incrementAvailableCount()
+        if (!isPro) {
+            await incrementAvailableCount()
+        }
 
         await createAuditLog({
             entityTitle: board.title,
