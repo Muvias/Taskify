@@ -27,13 +27,13 @@ export async function POST(req: Request) {
             session.subscription as string
         )
 
-        if (!session.metadata?.orgId) {
+        if (!session?.metadata?.orgId) {
             return new NextResponse("Org ID é requerido", { status: 400 })
         }
 
         await db.orgSubscription.create({
             data: {
-                orgId: session.metadata.orgId,
+                orgId: session?.metadata?.orgId,
                 stripeSubscriptionId: subscription.id,
                 stripeCustomerId: subscription.customer as string,
                 stripePriceId: subscription.items.data[0].price.id,
